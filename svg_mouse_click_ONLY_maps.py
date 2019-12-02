@@ -5,20 +5,20 @@ from PyQt5.QtXml import *
 from PyQt5.QtSvg import *
 
 COLOUR_MAP = {
-    "p1": Qt.cyan, 
-    "p2": Qt.red, 
-    "p3": Qt.green, 
-    "p4": Qt.red, 
-    "p5": Qt.green, 
-    "default": Qt.blue
+    "p1": Qt.cyan,
+    "p2": Qt.red,
+    "p3": Qt.green,
+    "p4": Qt.red,
+    "p5": Qt.green,
+    "default": Qt.blue,
 }
 
 STATES = {
-    "p1": "p1 state changed", 
-    "p2": "p2 state changed", 
+    "p1": "p1 state changed",
+    "p2": "p2 state changed",
     "p3": "p3 state changed",
     "p4": "p4 state changed",
-    "p5": "p5 state changed"
+    "p5": "p5 state changed",
 }
 
 
@@ -42,7 +42,7 @@ class SvgItem(QGraphicsSvgItem):
         img = QImage(bounds.size().toSize(), QImage.Format_ARGB32)
         # clear its buffer (this is important!)
         img.fill(Qt.transparent)
-                    # create a qpainter and ask the renderer to render it
+        # create a qpainter and ask the renderer to render it
         qp = QPainter(img)
         renderer.render(qp, id)
         qp.end()
@@ -84,6 +84,9 @@ class SvgItem(QGraphicsSvgItem):
             qp.drawPath(self._shape)
 
     def change_state_by_id(self, _id):
+        # This will need to be run inside a QThread or QAsync (seperate module)
+        # this method will prepare the thread and send any required variables.
+        # Create any `handler` methods for any signals emitted from the thread.
         print(STATES[_id])
 
     def change_colour_by_id(self, col):
@@ -94,7 +97,6 @@ class SvgItem(QGraphicsSvgItem):
         self.setGraphicsEffect(self.effect)
 
     def mousePressEvent(self, event: "QtWidgets.QGraphicsSceneMouseEvent"):
-        # self.current_col = self.effect.color()
         print("svg item: " + self.id + " - mousePressEvent()")
         self.change_colour_by_id(COLOUR_MAP[self.id])
         self.change_state_by_id(self.id)
@@ -116,16 +118,10 @@ class SvgViewer(QGraphicsView):
         self.resetTransform()
         self._scene.clear()
         self._renderer.load(data)
-        item0 = SvgItem("p1", self._renderer)
-        self._scene.addItem(item0)        
-        item1 = SvgItem("p2", self._renderer)
-        self._scene.addItem(item1)
-        item2 = SvgItem("p3", self._renderer)
-        self._scene.addItem(item2)
-        item2 = SvgItem("p4", self._renderer)
-        self._scene.addItem(item2)
-        item2 = SvgItem("p5", self._renderer)
-        self._scene.addItem(item2)
+
+        for state_name in STATES.keys():
+            item = SvgItem(state_name, self._renderer)
+            self._scene.addItem(item)
 
 
 class Window(QWidget):
