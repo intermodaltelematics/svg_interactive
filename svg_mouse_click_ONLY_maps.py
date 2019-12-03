@@ -4,22 +4,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtXml import *
 from PyQt5.QtSvg import *
 
-COLOUR_MAP = {
-    "p1": Qt.cyan,
-    "p2": Qt.red,
-    "p3": Qt.green,
-    "p4": Qt.red,
-    "p5": Qt.green,
-    "default": Qt.blue,
-}
+from pi_thread import *
 
-STATES = {
-    "p1": "p1 state changed",
-    "p2": "p2 state changed",
-    "p3": "p3 state changed",
-    "p4": "p4 state changed",
-    "p5": "p5 state changed",
-}
+from maps import *
+from pi_signal_handlers import *
 
 
 class SvgItem(QGraphicsSvgItem):
@@ -83,12 +71,6 @@ class SvgItem(QGraphicsSvgItem):
             qp.setBrush(Qt.NoBrush)
             qp.drawPath(self._shape)
 
-    def change_state_by_id(self, _id):
-        # This will need to be run inside a QThread or QAsync (seperate module)
-        # this method will prepare the thread and send any required variables.
-        # Create any `handler` methods for any signals emitted from the thread.
-        print(STATES[_id])
-
     def change_colour_by_id(self, col):
         print(self.effect.color() == col)
         if self.effect.color() == col:
@@ -99,7 +81,7 @@ class SvgItem(QGraphicsSvgItem):
     def mousePressEvent(self, event: "QtWidgets.QGraphicsSceneMouseEvent"):
         print("svg item: " + self.id + " - mousePressEvent()")
         self.change_colour_by_id(COLOUR_MAP[self.id])
-        self.change_state_by_id(self.id)
+        run_pi_command(self, self.id, 1, 5)
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: "QGraphicsSceneMouseEvent"):
